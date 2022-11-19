@@ -51,9 +51,7 @@ def activation_sigmoid(input_val):
     
 def perceptron(input1, layer_num): 
     # batch one size 3
-
     print("\n\nLayer Num is : ", layer_num)
-
 
     # M x N
     #if layer_num == 1 :         #N     x   K 
@@ -72,12 +70,6 @@ def perceptron(input1, layer_num):
         #print(np.shape("ORG size" , input1))
         weights = np.random.rand(neurons,input_size)
     
-
-
-    """ else : 
-        input1.T
-        weights  = np.random.rand(input_size, neurons) #"""
-
     print("Input: ", np.shape(input1) )
     print("Weights: ",np.shape( weights) )
     # print(np.shape(weights), np.shape(input1))
@@ -93,8 +85,14 @@ def perceptron(input1, layer_num):
     
     return [output, weights]
 
-   
-
+def loss_function(output_val, label):
+    loss = []
+    for i in range(batch_size):
+        print("\n" , output_val[0][i])
+        print(label[i])
+        loss.append( (label[i] - output_val[0][i]) ** 2)
+        print(loss[i])
+    print(loss)
         
 if __name__ == "__main__":
     # python3 NeuralNetwork.py xor_train_data.csv xor_train_label.csv xor_test_data.csv
@@ -120,10 +118,16 @@ if __name__ == "__main__":
     layer4_data = perceptron(layer3_data[0], layer_num = 4)
     weights4 = layer4_data[1]
 
-    for i in range(epoch):
+    print(np.shape(layer4_data[0])) 
+    loss_function(layer4_data[0], train_label)
+
+    for i in layer4_data[0]:
+        print(i)
+
+    """for i in range(epoch):
         # call prepcrotron and return new datum 
         nothing = 0
-    
+    """
 """def Perceptron(input1, input2, output) :
    outputP = input1*weights[0]+input2*weights[1]+bias*weights[2]
    if outputP > 0 : #activation function (here Heaviside)
