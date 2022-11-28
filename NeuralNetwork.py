@@ -21,7 +21,9 @@ def parse_inputs(csv):
 # layer by layer oeprations 
 # number of times calculator is dependent upon how many layers i have 
 # size of wieght matrix changes based how many neurons in a layer 
-      
+def d_activation_tanh(input_val, prev_deriv):
+    return (1.-np.tanh(input_val)**2) * prev_deriv
+
 def activation_tanh(input_val):
     return np.tanh(input_val)
 
@@ -35,21 +37,22 @@ def activation_sigmoid(input_val):
 # fdor last layer is deriv loss function (matrix)
 # for all other layers deriv = input @ prev deriv #        backprop(layer4_data[1], 0, layer4_data[0], d_loss_mat )
 
-def d_activation_sigmoid():
-    return np.matrix
+def d_activation_sigmoid(x, prev_deriv):
+    val = activation_sigmoid(x) * (1 - activation_sigmoid(x))
+    val *= prev_deriv
+    return val
 
 # calc all wieghts at once and feed back
-def backprop(weights, bias, input, act, der_loss): 
+def backprop(weights, bias, input, act, der_loss, label): 
     m = input.shape[1]
-    d_act_matrix = d_activation_sigmoid() ## FIX later
-    #for i,j in zip(cols)
-    print(m)
-    dw = (1 / m) * np.dot(input, ( act - y ).T)
-    db = (1 / m) * np.sum(act - y)
-
+    input = input.T
+    #temp = act - label.T
+    #d_act_matrix = d_activation_sigmoid() ## FIX later
+    dw = (1 / m) * np.dot(input, der_loss) # derloss instead if not wokring 
+    # db = (1 / m) * np.sum( act - label )
     weights -= dw * learning_rate 
-
-    # weigths - (dw * learningRate )
+    return  der_loss @ weights.T # test shape
+    #return weights 
 
 def loss(label, output): # cost is matrix
     # batch size
@@ -64,7 +67,6 @@ def back_loss(label ,output ): # d_csorss * w.T
     d_cross = ((label/output) - (1-label)/(1 - output))
     print(d_cross)
     return d_cross
-
     
 def perceptron(input1, layer_num): 
     # batch one size 3
@@ -87,7 +89,7 @@ def perceptron(input1, layer_num):
     else: output = activation_tanh(output) 
     print("after tan ", np.shape(output))
     
-    return [output, weights]
+    return [output, weights, input1]
 
 
 if __name__ == "__main__":
@@ -120,7 +122,17 @@ if __name__ == "__main__":
         print(np.shape(layer4_data[0])) 
         avg_loss = loss(train_label_new, layer4_data[0])
         d_loss_mat = back_loss(layer3_data[0], layer4_data[0])
-        backprop(layer4_data[1], 0, layer3_data[0], layer4_data[0], d_loss_mat )
+        d_sig = d_activation_sigmoid(d_loss_mat,layer4_data[2]) # FUNCTION 
+        bp_lay4 =  backprop(layer4_data[1], 0, layer3_data[0], layer4_data[0], d_sig, train_label_new )
+
+        d_tan = d_activation_tanh(d_loss_mat, layer3_data[0])
+
+        #backprop(weights, bias, input, act, der_loss, label):
+
+        """dbp_tan3 = d_tanh()
+        bp_lay4 = """
+        # store weigths in return statement and update after first epoc to layer day 
+
         #weights, bias, input, act, der_loss
                     # weights       
         # D-loss 
