@@ -18,19 +18,23 @@ def parse_inputs(csv):
     str = f'public/{csv}'
     return genfromtxt(str, delimiter=',')
 
+
 # layer by layer oeprations 
 # number of times calculator is dependent upon how many layers i have 
 # size of wieght matrix changes based how many neurons in a layer 
 def d_activation_tanh(input_val, prev_deriv):
     return (1.-np.tanh(input_val)**2) * prev_deriv
 
+
 def activation_tanh(input_val):
     return np.tanh(input_val)
+
 
 def activation_sigmoid(input_val):
     #return np.softmaz()
     #for item in input_val:
     return 1/(1 + np.exp(-input_val))
+
 
 # x is input before 
 # y 
@@ -54,6 +58,7 @@ def backprop(weights, input, der_loss):
     return  der_loss @ weights.T # test shape
     #return weights 
 
+
 def loss(label, output): # cost is matrix
     # batch size
     label = label.reshape(-1,1)
@@ -62,21 +67,24 @@ def loss(label, output): # cost is matrix
     #print(cost)
     return cost 
 
+
 def back_loss(label ,output ): # d_csorss * w.T
     # loss = expected_label - predicted 
     d_cross = ((label/output) - (1-label)/(1 - output))
     #print(d_cross)
     return d_cross
     
-def perceptron(input1, layer_num): 
+
+def perceptron(input1, layer_num, weights, iteration): 
     # batch one size 3
     # print("\n\nLayer Num is : ", layer_num)
     
-    if (layer_num > 1):
-        weights = np.random.normal(size = (neurons, neurons))
-    elif (layer_num % 2 ) != 0:
-        input1 = input1[:batch_size]
-        weights = np.random.normal(size = (input_size, neurons))
+    if iteration == 0:
+        print("iteration is : ",iteration)
+        if (layer_num > 1): weights = np.random.normal(size = (neurons, neurons))
+        elif (layer_num % 2 ) != 0: weights = np.random.normal(size = (input_size, neurons))
+        
+
     
     #print("Input: ", np.shape(input1) )
     #print("Weights: ",np.shape( weights) )
@@ -88,7 +96,6 @@ def perceptron(input1, layer_num):
         #print("LAYER 4")
     else: output = activation_tanh(output) 
     #print("after tan ", np.shape(output))
-    
     return [output, weights, input1]
 
 
@@ -105,22 +112,32 @@ if __name__ == "__main__":
 
 # for x in range(epochs):
     #print(int((len(train_data))/ batch_size))
+    weights1, weights2, weights3, weights4 = 0, 0, 0, 0
     for j in range( int(int(len(train_data))/ batch_size)):
         # parse datum for minibatch sizes 
         train_data_new = train_data[j*batch_size : (j+1)*batch_size]
         train_label_new = train_label[j*batch_size : (j+1)*batch_size]
 
-        layer1_data = perceptron(train_data_new, layer_num = 1)
-        weights1 = layer1_data[1]
-        layer2_data = perceptron(layer1_data[0], layer_num = 2)
-        weights2 = layer2_data[1]
-        layer3_data = perceptron(layer2_data[0], layer_num = 3)
-        weights3 = layer3_data[1]
-        layer4_data = perceptron(layer3_data[0], layer_num = 4)
-        weights4 = layer4_data[1]
+        if j == 0:
+            layer1_data = perceptron(train_data_new, layer_num = 1, weights = None, iteration = j)
+            weights1 = layer1_data[1]
+            layer2_data = perceptron(layer1_data[0], layer_num = 2, weights = None, iteration = j)
+            weights2 = layer2_data[1]
+            layer3_data = perceptron(layer2_data[0], layer_num = 3, weights = None, iteration = j)
+            weights3 = layer3_data[1]
+            layer4_data = perceptron(layer3_data[0], layer_num = 4, weights = None, iteration = j)
+            weights4 = layer4_data[1]
+        else: # use weights from first iteration 
+            layer1_data = perceptron(train_data_new, layer_num = 1, weights = weights1, iteration = j)
+            weights1 = layer1_data[1]
+            layer2_data = perceptron(layer1_data[0], layer_num = 2, weights = weights2, iteration = j)
+            weights2 = layer2_data[1]
+            layer3_data = perceptron(layer2_data[0], layer_num = 3, weights = weights3, iteration = j)
+            weights3 = layer3_data[1]
+            layer4_data = perceptron(layer3_data[0], layer_num = 4, weights = weights4, iteration = j)
+            weights4 = layer4_data[1]
 
         #if j != 0: 
-
 
         #print(np.shape(layer4_data[0])) 
         avg_loss = loss(train_label_new, layer4_data[0])
