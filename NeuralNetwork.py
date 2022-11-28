@@ -43,7 +43,7 @@ def d_activation_sigmoid(x, prev_deriv):
     return val
 
 # calc all wieghts at once and feed back
-def backprop(weights, bias, input, act, der_loss, label): 
+def backprop(weights, input, der_loss): 
     m = input.shape[1]
     input = input.T
     #temp = act - label.T
@@ -59,18 +59,18 @@ def loss(label, output): # cost is matrix
     label = label.reshape(-1,1)
     cost = np.sum(label * np.log(output) + (1-label) * np.log(1 - output))
 
-    print(cost)
-    return loss 
+    #print(cost)
+    return cost 
 
 def back_loss(label ,output ): # d_csorss * w.T
     # loss = expected_label - predicted 
     d_cross = ((label/output) - (1-label)/(1 - output))
-    print(d_cross)
+    #print(d_cross)
     return d_cross
     
 def perceptron(input1, layer_num): 
     # batch one size 3
-    print("\n\nLayer Num is : ", layer_num)
+    # print("\n\nLayer Num is : ", layer_num)
     
     if (layer_num > 1):
         weights = np.random.normal(size = (neurons, neurons))
@@ -78,16 +78,16 @@ def perceptron(input1, layer_num):
         input1 = input1[:batch_size]
         weights = np.random.normal(size = (input_size, neurons))
     
-    print("Input: ", np.shape(input1) )
-    print("Weights: ",np.shape( weights) )
+    #print("Input: ", np.shape(input1) )
+    #print("Weights: ",np.shape( weights) )
     output = np.dot( input1, weights ) + bias #np.matmul(input1, weights )
-    print("Post matrix mul: ",np.shape( (output)) )
+    #print("Post matrix mul: ",np.shape( (output)) )
 
     if layer_num == 4: 
         output = activation_sigmoid(output)
-        print("LAYER 4")
+        #print("LAYER 4")
     else: output = activation_tanh(output) 
-    print("after tan ", np.shape(output))
+    #print("after tan ", np.shape(output))
     
     return [output, weights, input1]
 
@@ -103,8 +103,8 @@ if __name__ == "__main__":
         elif counter == 4:   test_label = parse_inputs(i)
         counter += 1
 
-
-    print(int((len(train_data))/ batch_size))
+# for x in range(epochs):
+    #print(int((len(train_data))/ batch_size))
     for j in range( int(int(len(train_data))/ batch_size)):
         # parse datum for minibatch sizes 
         train_data_new = train_data[j*batch_size : (j+1)*batch_size]
@@ -119,13 +119,26 @@ if __name__ == "__main__":
         layer4_data = perceptron(layer3_data[0], layer_num = 4)
         weights4 = layer4_data[1]
 
-        print(np.shape(layer4_data[0])) 
+        #if j != 0: 
+
+
+        #print(np.shape(layer4_data[0])) 
         avg_loss = loss(train_label_new, layer4_data[0])
         d_loss_mat = back_loss(layer3_data[0], layer4_data[0])
-        d_sig = d_activation_sigmoid(d_loss_mat,layer4_data[2]) # FUNCTION 
-        bp_lay4 =  backprop(layer4_data[1], 0, layer3_data[0], layer4_data[0], d_sig, train_label_new )
 
-        d_tan = d_activation_tanh(d_loss_mat, layer3_data[0])
+        d_sig = d_activation_sigmoid(d_loss_mat,layer4_data[2]) # FUNCTION 
+        bp_lay4 =  backprop(layer4_data[1], layer3_data[0], d_sig)
+
+        d_tan3 = d_activation_tanh(d_loss_mat, layer3_data[0])
+        bp_lay3 = backprop(layer3_data[1], layer2_data[0], d_tan3)
+
+        d_tan2 = d_activation_tanh(d_loss_mat, layer2_data[0])
+        bp_lay2 = backprop(layer2_data[1], layer1_data[0], d_tan2)
+
+        d_tan1 = d_activation_tanh(d_loss_mat, layer1_data[0])
+        bp_lay2 = backprop(layer1_data[1], train_data_new, d_tan1)
+        
+        
 
         #backprop(weights, bias, input, act, der_loss, label):
 
