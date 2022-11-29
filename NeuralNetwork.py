@@ -8,7 +8,7 @@ import time
 #import matplotlib.pyplot as plt
 
 
-bias = 0 #value of bias
+#bias = 0 #value of bias
 epochs = 300
 batch_size = 1
 neurons = 8
@@ -25,7 +25,7 @@ def parse_inputs(csv):
 # number of times calculator is dependent upon how many layers i have 
 # size of wieght matrix changes based how many neurons in a layer 
 def d_activation_tanh(input_val, prev_deriv):
-    return (1.-np.tanh(input_val)**2) * prev_deriv
+    return (1 -(np.tanh(input_val)**2)) * prev_deriv
 
 
 def activation_tanh(input_val):
@@ -35,7 +35,7 @@ def activation_tanh(input_val):
 def activation_sigmoid(input_val):
     #return np.softmaz()
     #for item in input_val:
-    val = 1/(1 + np.exp(-input_val))
+    val = 1/(1 + np.exp(-1*input_val))
     #print(" val :", val)
 
     return val
@@ -46,12 +46,10 @@ def activation_sigmoid(input_val):
 # fdor last layer is deriv loss function (matrix)
 # for all other layers deriv = input @ prev deriv #        backprop(layer4_data[1], 0, layer4_data[0], d_loss_mat )
 
-def d_activation_sigmoid(x, prev_deriv):
+def d_activation_sigmoid(prev_deriv, x):
     val = activation_sigmoid(x) * (1 - activation_sigmoid(x))
     #print("VAL SHPE" , prev_deriv.shape)
-
     val *= prev_deriv
-
     return val
 
 # calc all wieghts at once and feed back
@@ -71,6 +69,12 @@ def backprop(weights, input, der_loss, layer_num):
     #print("Weights shape: " , weights.shape)
     return [der_loss @ weights.T, weights]# test shape
     #return weights 
+
+def leaky_Relu(x):
+    return np.where(x > 0, x, x * 0.01)                          
+
+def  d_leaky_Relu(x, alpha=0.01):
+    return np.where(x>0, 1, alpha) 
 
 def accuracy(label, pred, epoch):
     counter = 0
@@ -95,9 +99,10 @@ def loss(label, output): # cost is matrix
 
 def back_loss(label ,output ): # d_csorss * w.T
     # loss = expected_label - predicted 
-    #print("label.shape: ", label.shape, "output:", output.shape )
+    label = label.reshape(1, 1)
+    print("label.shape: ", label.shape, "output:", output.shape )
+
     d_cross = ((label/output) - (1-label)/(1 - output))
-    
     #print(d_cross.shape)
     return d_cross
     
@@ -120,12 +125,12 @@ def forward_pass(input1, layer_num, weights, iteration):
 
 
     #print("Weights: ",np.shape( weights), "layer num: ", layer_num )
-    output_temp = np.dot( input1, weights ) + bias #np.matmul(input1, weights )
+    output_temp = np.dot( input1, weights )  #np.matmul(input1, weights )
 
     if layer_num == 4:
-        output = activation_sigmoid(output_temp)
+        output = leaky_Relu(output_temp)
 
-    else: output = activation_tanh(output_temp) 
+    else: output = leaky_Relu(output_temp) 
     return [output, weights, output_temp]
 
 
@@ -186,47 +191,41 @@ if __name__ == "__main__":
             final_output = layer4_data[0][0]
             final_output_mat.append(final_output)
             
-            #print(final_output)
-            #final_output = np.round(final_output)
+            
             total_loss += loss(train_label[j], final_output)
             
-            #print(final_output)
-            if j == 2000 and x ==299: 
+    
+            if j == 2000 : 
                 print(x)
                 print(total_loss)
                 accuracy(train_label, final_output_mat ,epoch = x)
                  
             #if j != 0: 
             temp_w = weights4
-            #print(np.shape(layer4_data[0])) 
-            #avg_loss = loss(train_label_new, layer4_data[0])
-            d_loss_mat = back_loss(train_label_new, layer4_data[0])
-            #print("DLOSS, ", d_loss_mat.shape)
-            #print("input lay 4: ", layer4_data[2].shape)
 
-            d_sig = d_activation_sigmoid(d_loss_mat, layer4_data[2]) # FUNCTION 
+            d_loss_mat = back_loss(train_label_new, layer4_data[0])
+            d_sig = d_leaky_Relu(layer4_data[2]) * d_loss_mat # FUNCTION 
             bp_lay4 =  backprop(layer4_data[1], layer3_data[0], d_sig, 4)
-            #print("BP LAYER 4: ",  bp_lay4[1].shape)
             weights4 = bp_lay4[1]
 
             #print(temp_w, weights4)
             #assert( np.alltrue(temp_w == weights4) )
 
-            #print("BP LAYER 4: ", weights4.shape)
 
-            d_tan3 = d_activation_tanh(d_loss_mat, layer3_data[0])
+
+            d_tan3 = d_leaky_Relu(layer3_data[2]) * bp_lay4[0] # dLossmat => bp_lay4 change
             d_tan3 *= bp_lay4[0]
             bp_lay3 = backprop(layer3_data[1], layer2_data[0], d_tan3, 3)
             weights3 = bp_lay3[1]
             #print(bp_lay3[0].shape)
 
-            d_tan2 = d_activation_tanh(d_loss_mat, layer2_data[0])
+            d_tan2 = d_leaky_Relu( layer2_data[2]) *  bp_lay3[0]  # dLossmat => bp_lay3 change
             d_tan2 *= bp_lay3[0]
             bp_lay2 = backprop(layer2_data[1], layer1_data[0], d_tan2, 2)
             weights2 = bp_lay2[1]
             #print(bp_lay2[0].shape)
 
-            d_tan1 = d_activation_tanh(d_loss_mat, layer1_data[0])
+            d_tan1 = d_leaky_Relu(layer1_data[2]) * bp_lay2[0]  # dLossmat => bp_lay2 change
             d_tan1 *= bp_lay2[0]
             bp_lay1 = backprop(layer1_data[1], train_data_new, d_tan1,1)
             weights1 = bp_lay1[1]
