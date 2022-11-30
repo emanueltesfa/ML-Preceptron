@@ -62,10 +62,10 @@ def backprop(weights, input, der_loss ,prev_bias, layer_num):
     dw = np.dot(input.reshape(-1, 1), der_loss.reshape(1, -1) ) # derloss instead if not wokring
     #print( "dw,", dw)
     db = der_loss
-    prev_bias = prev_bias - (db * learning_rate)
+    # prev_bias = prev_bias - (db * learning_rate)
     #print("db", db.shape)
-    weights = weights - ( dw * learning_rate )
-    return [der_loss @ weights.T, weights, prev_bias ]# test shape
+    #weights = weights - ( dw * learning_rate )
+    return [der_loss @ weights.T, dw, db]# test shape
 
 def leaky_Relu(x):
     #print("leaky")
@@ -167,6 +167,7 @@ if __name__ == "__main__":
 
     weights1, weights2, weights3, weights4, counter =  0, 0, 0, 0, 0
     bias4, bias3, bias2, bias1 = 0.1, 0.1, 0.1, 0.1
+    t_weights3, t_weights = np.array(2,8), np.array(8,1)
 
     for i in sys.argv:
         if counter == 1: train_data = parse_inputs(i)
@@ -216,10 +217,10 @@ if __name__ == "__main__":
                 """layer2_data = forward_pass(layer1_data[0], layer_num = 2, weights = weights2, iteration = x+j)
                 weights2 = layer2_data[1]"""
                 layer3_data = forward_pass(train_data_new, bias3, layer_num = 3, weights = weights3, iteration = x+j)
-                weights3 = layer3_data[1]
+                #t_weights3 += layer3_data[1]
 
                 layer4_data = forward_pass(layer3_data[0], bias4, layer_num = 4, weights = weights4, iteration = x+j)
-                weights4 = layer4_data[1]
+                #t_weights4 = layer4_data[1]
 
             #print("layer4_data[0][0]", layer4_data[0][0])
             # print(lay)
@@ -258,7 +259,7 @@ if __name__ == "__main__":
 
             d_tan4 = d_activation_tanh(layer4_data[2] ,d_loss_mat) # FUNCTION 
             bp_lay4 =  backprop(weights4, layer4_data[3], d_tan4, bias4, 4)
-            weights4 = bp_lay4[1]
+            t_weights4 = bp_lay4[1]
             bias4 = bp_lay4[2] 
             #print("bias4 after update, " ,bias4)
             #print("weights4 : ", weights4)
@@ -273,7 +274,7 @@ if __name__ == "__main__":
 
             d_leaky3 = d_leaky_Relu(layer3_data[2] )* bp_lay4[0] # dLossmat => bp_lay4 change
             bp_lay3 = backprop(weights3, layer3_data[3], d_leaky3, bias3, 3)
-            weights3 = bp_lay3[1]
+            t_weights3 = bp_lay3[1]
             bias3 = bp_lay3[2]
 
             #print("dtan3", d_leaky3, "output layer 3", bp_lay3 )
