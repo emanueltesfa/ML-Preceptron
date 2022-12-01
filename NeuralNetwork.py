@@ -384,21 +384,40 @@ if __name__ == "__main__":
                 weights1 = bp_lay1[1]"""
         # print("epoch: ",x, "batch num: " ,j, "After backprop weights", weights4, " output: ", layer4_data[0], "exptected: ", train_label_new)
     # print line during foward pass
+    output_arr = []
+    for batch in range(int(int(len(test_data)) / batch_size)):
+        print("Epoch is is: ", batch)
+        # print("train_label_final2 : ", train_label_final)
 
-    test_l3 = forward_pass(
-        test_data, bias3, layer_num=3, weights=weights3, iteration=x+j)
-    test_l4 = forward_pass(
-        test_l3[0], bias4, layer_num=4, weights=weights4, iteration=x+j)
-    # print(test_l4[0])
+        test_data_new = test_data[batch*batch_size: (batch+1)*batch_size]
+        test_label_new = test_label[batch*batch_size: (batch+1)*batch_size]
+        new_batch_size = len(train_data_new)
+        # print("train_label_final3: ", train_label_final)
+
+        # print("train label old", train_label_new)
+
+        # train_label_new = tanh_fix(train_label_new)
+        # print("train_label_final4: ", train_label_final)
+
+        print("test_label_new: ", test_data_new)
+        # time.sleep(1)
+        for iter in range(len(test_data_new)):
+            print("itetation is : ", iter)
+            test_l3 = forward_pass(
+                test_data[iter], bias3, layer_num=3, weights=weights3, iteration=x+j)
+            test_l4 = forward_pass(
+                test_l3[0], bias4, layer_num=4, weights=weights4, iteration=x+j)
+            output_arr.append(test_l4[0])
+            print(test_l3[0])
     arr = []
-    for item in range(len(test_l4[0])):
-        if test_l4[0][item] <= 0:
-            test_l4[0][item] = int(0)
+    for item in range(len(output_arr)):
+        if output_arr[item] <= 0:
+            output_arr[item] = int(0)
             arr.append(int(0))
         else:
-            test_l4[0][item] = int(1)
+            output_arr[item] = int(1)
             arr.append(int(1))
 
     arr = np.array(arr)
-    arr.tofile('data.csv', sep='\n')
     accuracy(test_label, arr, epoch=0)
+    arr.tofile('data.csv', sep='\n')
