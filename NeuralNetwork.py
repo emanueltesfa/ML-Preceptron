@@ -11,7 +11,7 @@ import copy
 
 
 # bias = 0 #value of bias
-epochs = 50
+epochs = 200
 batch_size = 20
 neurons = 8
 input_size = 2
@@ -128,8 +128,8 @@ def accuracy(label, pred, epoch):
 
     counter = 0
     pred = np.array(pred)
-    #print("acc label: ", np.array(label[:20]))
-    #print("prediction: ", np.array(pred[:20]))
+    print("acc label: ", np.array(label[:20]))
+    print("prediction: ", np.array(pred[:20]))
     # pred = np.round(pred)
 
     for i in range(len(pred)):
@@ -365,7 +365,7 @@ if __name__ == "__main__":
         final_label_mat.append(train_label_new)"""
         # print("train_label_final 7: ", train_label_final)
 
-        accuracy(train_label, final_output_mat, epoch=x)
+        #accuracy(train_label, final_output_mat, epoch=x)
 
         # print("dtan3", d_leaky3, "output layer 3", bp_lay3 )
         # print("weights3", weights3)
@@ -386,7 +386,7 @@ if __name__ == "__main__":
     # print line during foward pass
     output_arr = []
     for batch in range(int(int(len(test_data)) / batch_size)):
-        print("Epoch is is: ", batch)
+        #print("Epoch is is: ", batch)
         # print("train_label_final2 : ", train_label_final)
 
         test_data_new = test_data[batch*batch_size: (batch+1)*batch_size]
@@ -399,16 +399,16 @@ if __name__ == "__main__":
         # train_label_new = tanh_fix(train_label_new)
         # print("train_label_final4: ", train_label_final)
 
-        print("test_label_new: ", test_data_new)
+        #print("test_label_new: ", test_data_new)
         # time.sleep(1)
         for iter in range(len(test_data_new)):
-            print("itetation is : ", iter)
+            #print("itetation is : ", iter)
             test_l3 = forward_pass(
                 test_data[iter], bias3, layer_num=3, weights=weights3, iteration=x+j)
             test_l4 = forward_pass(
                 test_l3[0], bias4, layer_num=4, weights=weights4, iteration=x+j)
             output_arr.append(test_l4[0])
-            print(test_l3[0])
+            # print(test_l3[0])
     arr = []
     for item in range(len(output_arr)):
         if output_arr[item] <= 0:
@@ -419,5 +419,5 @@ if __name__ == "__main__":
             arr.append(int(1))
 
     arr = np.array(arr)
-    accuracy(test_label, arr, epoch=0)
+    accuracy(output_arr, arr, epoch=0)
     arr.tofile('data.csv', sep='\n')
